@@ -61,6 +61,16 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@utility font-welcome {
+  font-family: var(--font-welcome);
+  font-weight: 400;
+}
+
+@utility font-academy {
+  font-family: var(--font-academy);
+  letter-spacing: 0.05em;
+}
+
 :root {
   --persian-blue: #1c39bb;
   --font-welcome: "Great Vibes", "Segoe Script", cursive;
