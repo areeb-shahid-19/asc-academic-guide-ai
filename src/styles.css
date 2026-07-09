@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -61,7 +62,20 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@utility font-welcome {
+  font-family: var(--font-welcome);
+  font-weight: 400;
+}
+
+@utility font-academy {
+  font-family: var(--font-academy);
+  letter-spacing: 0.05em;
+}
+
 :root {
+  --persian-blue: #1c39bb;
+  --font-welcome: "Great Vibes", "Segoe Script", cursive;
+  --font-academy: "Oswald", "Impact", system-ui, sans-serif;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
