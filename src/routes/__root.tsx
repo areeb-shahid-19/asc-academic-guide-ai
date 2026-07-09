@@ -81,21 +81,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "AI-powered learning for CBSE / NCERT students. Upload notes, ask any topic, or get complete NCERT chapter explanations with derivations and solved questions.",
+          "AI-driven learning for Classes 9–12. Ask any topic or get full chapter explanations. We provide the tools you need to achieve academic excellence.",
       },
       { name: "author", content: "Areeb Shahid Academy" },
-      { property: "og:title", content: "Areeb Shahid Academy" },
+      { property: "og:title", content: "Areeb Shahid Academy — AI tutor for Classes 9-12" },
       {
         property: "og:description",
         content:
-          "AI tutor for CBSE / NCERT Classes 9-12. Personalized chapter explanations, NCERT questions and solutions.",
+          "AI-driven learning for Classes 9–12. Ask any topic or get full chapter explanations. We provide the tools you need to achieve academic excellence.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Areeb Shahid Academy — AI tutor for Classes 9-12" },
+      { name: "twitter:description", content: "AI-driven learning for Classes 9–12. Ask any topic or get full chapter explanations. We provide the tools you need to achieve academic excellence." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/jDQrBfVa2zL7beWtxMtSkkHfjX33/social-images/social-1783588070005-Gemini_Generated_Image_brufxdbrufxdbruf.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/jDQrBfVa2zL7beWtxMtSkkHfjX33/social-images/social-1783588070005-Gemini_Generated_Image_brufxdbrufxdbruf.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

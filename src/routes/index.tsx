@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "AI-powered learning for CBSE / NCERT students of classes 9-12. Ask any topic, upload notes, or get full chapter explanations.",
+          "AI-driven learning for Classes 9–12. Ask any topic or get full chapter explanations. We provide the tools you need to achieve academic excellence.",
       },
     ],
   }),
