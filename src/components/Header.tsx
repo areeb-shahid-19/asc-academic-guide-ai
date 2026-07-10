@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, FileUp, Sparkles, BookOpen } from "lucide-react";
+import { Menu, FileUp, Sparkles, BookOpen, Home } from "lucide-react";
 import {
   Sheet,
   SheetContent,
