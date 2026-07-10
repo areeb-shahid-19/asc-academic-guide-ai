@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, FileUp, Sparkles, BookOpen } from "lucide-react";
+import { Menu, FileUp, Sparkles, BookOpen, Home } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -32,6 +32,21 @@ export function Header() {
             </SheetHeader>
 
             <nav className="mt-6 flex flex-col gap-2">
+              <SheetClose asChild>
+                <Link
+                  to="/"
+                  className="flex items-start gap-3 rounded-lg border p-4 hover:bg-accent transition"
+                >
+                  <Home className="mt-0.5 h-5 w-5 text-[color:var(--persian-blue)]" />
+                  <div>
+                    <div className="font-semibold">Home</div>
+                    <div className="text-sm text-muted-foreground">
+                      Back to the welcome page and class tiles.
+                    </div>
+                  </div>
+                </Link>
+              </SheetClose>
+
               <SheetClose asChild>
                 <Link
                   to="/upload"
