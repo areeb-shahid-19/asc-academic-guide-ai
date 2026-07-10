@@ -93,7 +93,7 @@ export function AiOutput({
           ),
         }}
       >
-        {text}
+        {normalizeMath(text)}
       </ReactMarkdown>
     </article>
   );
