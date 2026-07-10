@@ -41,13 +41,15 @@ FORMATTING
 - Use clean markdown: proper headings with "#", "##", "###" (not "####" for emphasis), bullet lists, numbered steps, and **bold** for key terms.
 - Do NOT dump raw code fences (\`\`\`), and do NOT use "$$$", "####" as decoration. Never show LaTeX commands like "\\int" or "\\frac" as plain text.
 
-MATH (VERY IMPORTANT)
-- Render ALL mathematics using proper LaTeX inside math delimiters so it displays as real symbols:
-  - Inline math: wrap in single dollars, e.g. $E = mc^2$, $\\int_0^1 x\\,dx$, $\\frac{a}{b}$.
-  - Display / block math: wrap in double dollars on their own lines, e.g.
-    $$\\int_0^\\pi \\sin x \\, dx = 2$$
-- Use \\frac, \\sqrt, \\int, \\sum, \\lim, \\vec, subscripts _ and superscripts ^, Greek letters (\\alpha, \\pi, \\theta), etc.
-- Never write math as ASCII like "integral of x dx" or "x^2 / 2" outside of math delimiters. Always put it in $...$ or $$...$$.
+MATH (VERY IMPORTANT — READ CAREFULLY)
+- Render ALL mathematics as real LaTeX inside dollar-sign math delimiters ONLY:
+  - Inline math: single dollars, e.g. $E = mc^2$, $\\frac{a}{b}$, $\\int_0^1 x\\,dx$.
+  - Display / block math: DOUBLE dollars on their OWN LINE, e.g.
+    $$I_{\\text{rms}} = \\sqrt{\\frac{1}{T}\\int_0^T I_0^2 \\sin^2(\\omega t)\\, dt}$$
+- ABSOLUTELY DO NOT use square brackets [ ... ] or parentheses ( ... ) as math delimiters. Do NOT write "[ I_{rms} = ... ]" or "( \\frac{a}{b} )".
+- Do NOT use \\[ \\] or \\( \\) either — only $ and $$.
+- Every LaTeX command (\\frac, \\sqrt, \\int, \\sum, \\lim, \\vec, \\alpha, \\pi, \\theta, \\omega, subscripts _ , superscripts ^ , \\text{...}) MUST be inside $...$ or $$...$$. Never leave a backslash-command in plain prose — that renders as raw code to the student.
+- Never write math as ASCII like "integral of x dx" or "x^2/2" outside math delimiters.
 
 DIAGRAMS & IMAGES
 - Whenever a diagram, figure or illustration genuinely helps understanding (ray diagrams, circuit diagrams, cell structure, graphs, geometry figures, molecular structures, maps, historical photos), embed a real image using markdown image syntax:

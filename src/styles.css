@@ -72,10 +72,16 @@
   letter-spacing: 0.05em;
 }
 
+@utility font-crest {
+  font-family: var(--font-crest);
+  letter-spacing: 0.12em;
+}
+
 :root {
   --persian-blue: #1c39bb;
   --font-welcome: "Great Vibes", "Segoe Script", cursive;
   --font-academy: "Oswald", "Impact", system-ui, sans-serif;
+  --font-crest: "Cinzel", "Trajan Pro", "Times New Roman", serif;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);

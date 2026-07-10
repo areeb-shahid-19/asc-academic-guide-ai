@@ -57,9 +57,11 @@ function Home() {
             <span className="font-welcome text-5xl md:text-7xl text-[color:var(--persian-blue)]">
               Welcome
             </span>
-            <span className="mx-2 text-2xl md:text-3xl text-foreground/80">to</span>
+            <span className="ml-6 md:ml-8 mr-2 text-2xl md:text-3xl text-foreground/80 align-middle">
+              to
+            </span>
             <br />
-            <span className="font-academy text-3xl md:text-5xl font-bold uppercase tracking-wider text-[color:var(--persian-blue)]">
+            <span className="font-crest text-3xl md:text-5xl font-semibold uppercase tracking-widest text-[color:var(--persian-blue)]">
               Areeb Shahid Academy
             </span>
           </h1>

@@ -4,6 +4,31 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { Loader2 } from "lucide-react";
 
+/**
+ * The model sometimes emits math with the "wrong" delimiters:
+ *   \[ ... \]      (LaTeX display)
+ *   \( ... \)      (LaTeX inline)
+ *   [ \frac{a}{b} ]   (bracket-wrapped LaTeX, no backslash)
+ *   ( \int x\,dx )    (paren-wrapped LaTeX inline)
+ * remark-math only understands $...$ and $$...$$, so we normalize
+ * everything to dollar delimiters before rendering.
+ */
+function normalizeMath(input: string): string {
+  let s = input;
+  // \[ ... \]  ->  $$ ... $$
+  s = s.replace(/\\\[([\s\S]+?)\\\]/g, (_m, body) => `$$${body}$$`);
+  // \( ... \)  ->  $ ... $
+  s = s.replace(/\\\(([\s\S]+?)\\\)/g, (_m, body) => `$${body}$`);
+  // [ ... ]  with a LaTeX command inside  ->  $$ ... $$
+  s = s.replace(/(^|[\s>])\[\s*([^\[\]\n]*\\[a-zA-Z]+[^\[\]]*?)\s*\]/g,
+    (_m, pre, body) => `${pre}$$${body}$$`);
+  // ( ... )  with a LaTeX command inside  ->  $ ... $
+  s = s.replace(/(^|[\s>])\(\s*([^()\n]*\\[a-zA-Z]+[^()]*?)\s*\)/g,
+    (_m, pre, body) => `${pre}$${body}$`);
+  return s;
+}
+
+
 export function AiOutput({
   loading,
   error,
@@ -68,7 +93,7 @@ export function AiOutput({
           ),
         }}
       >
-        {text}
+        {normalizeMath(text)}
       </ReactMarkdown>
     </article>
   );

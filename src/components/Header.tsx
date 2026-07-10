@@ -1,19 +1,19 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, FileUp, Sparkles, BookOpen, Home } from "lucide-react";
+import { FileUp, Sparkles, BookOpen, Home } from "lucide-react";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
   SheetClose,
 } from "@/components/ui/sheet";
+import logoUrl from "@/assets/logo.png";
 
 export function Header() {
   return (
     <header className="w-full bg-[color:var(--persian-blue)] text-white">
-      <div className="relative mx-auto flex items-center justify-between px-4 py-4 md:py-5">
+      <div className="relative mx-auto flex items-center justify-between px-4 py-3 md:py-4">
         <Sheet>
           <SheetTrigger
             aria-label="Open menu"
@@ -24,11 +24,10 @@ export function Header() {
             <span className="block h-[3px] w-7 bg-white rounded-full" />
           </SheetTrigger>
           <SheetContent side="left" className="w-[320px] sm:w-[380px]">
-            <SheetHeader>
-              <SheetTitle className="font-academy text-xl tracking-wide">
-                AREEB SHAHID ACADEMY
+            <SheetHeader className="items-center text-center">
+              <SheetTitle className="font-crest text-xl font-semibold uppercase tracking-widest text-[color:var(--persian-blue)]">
+                Areeb Shahid Academy
               </SheetTitle>
-              <SheetDescription>Choose how you want to study today.</SheetDescription>
             </SheetHeader>
 
             <nav className="mt-6 flex flex-col gap-2">
@@ -97,9 +96,16 @@ export function Header() {
 
         <Link
           to="/"
-          className="absolute left-1/2 -translate-x-1/2 font-academy text-lg sm:text-2xl md:text-3xl font-bold tracking-wider text-white uppercase whitespace-nowrap"
+          aria-label="Areeb Shahid Academy — Home"
+          className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
         >
-          Areeb Shahid Academy
+          <img
+            src={logoUrl}
+            alt="Areeb Shahid Academy logo"
+            width={1024}
+            height={1024}
+            className="h-14 w-auto sm:h-16 md:h-20 object-contain drop-shadow-sm"
+          />
         </Link>
 
         {/* Right-side spacer to balance the hamburger */}
