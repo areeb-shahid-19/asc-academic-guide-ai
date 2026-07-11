@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
 import { AiOutput } from "@/components/AiOutput";
 import { CurriculumPicker, type PickerValue } from "@/components/CurriculumPicker";
+import { LengthButton, type LengthChoice } from "@/components/LengthButton";
 import { explainChapter } from "@/lib/mesh.functions";
 
 export const Route = createFileRoute("/chapter")({
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/chapter")({
   }),
   validateSearch: (s: Record<string, unknown>) => ({
     classKey: typeof s.classKey === "string" ? s.classKey : "",
+    stream: typeof s.stream === "string" ? s.stream : "",
     subject: typeof s.subject === "string" ? s.subject : "",
     chapter: typeof s.chapter === "string" ? s.chapter : "",
     auto: s.auto === "1" ? "1" : "",
@@ -32,6 +33,7 @@ function ChapterPage() {
   const run = useServerFn(explainChapter);
   const [picker, setPicker] = useState<PickerValue>({
     classKey: search.classKey,
+    stream: search.stream,
     subject: search.subject,
     chapter: search.chapter,
   });
@@ -41,7 +43,7 @@ function ChapterPage() {
 
   const ready = picker.classKey && picker.subject && picker.chapter;
 
-  async function submit() {
+  async function submit(length: LengthChoice) {
     setError(null);
     setText("");
     if (!ready) {
@@ -50,7 +52,7 @@ function ChapterPage() {
     }
     setLoading(true);
     try {
-      const res = await run({ data: picker });
+      const res = await run({ data: { ...picker, length } });
       setText(res.text);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -59,10 +61,9 @@ function ChapterPage() {
     }
   }
 
-  // Auto-run when arriving from home tile with all three params + auto=1
   useEffect(() => {
     if (search.auto === "1" && ready && !text && !loading) {
-      void submit();
+      void submit("detailed");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -83,13 +84,12 @@ function ChapterPage() {
 
         <div className="space-y-5 rounded-lg border bg-card p-5">
           <CurriculumPicker value={picker} onChange={setPicker} />
-          <Button
-            onClick={submit}
-            disabled={loading || !ready}
-            className="bg-[color:var(--persian-blue)] hover:bg-[color:var(--persian-blue)]/90"
-          >
-            {loading ? "Building your chapter guide…" : "Explain full chapter"}
-          </Button>
+          <LengthButton
+            label="Explain full chapter"
+            loading={loading}
+            disabled={!ready}
+            onChoose={submit}
+          />
         </div>
 
         <AiOutput

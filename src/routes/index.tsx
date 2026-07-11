@@ -2,12 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AiOutput } from "@/components/AiOutput";
+import { LengthButton, type LengthChoice } from "@/components/LengthButton";
 import { explainAuto } from "@/lib/mesh.functions";
-import { CLASS_KEYS, CURRICULUM } from "@/lib/curriculum";
+import { CLASS_KEYS, CURRICULUM, classHasStreams } from "@/lib/curriculum";
 import { Menu, Search } from "lucide-react";
+import wordmarkUrl from "@/assets/wordmark.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,14 +31,16 @@ function Home() {
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  async function askAuto(e: React.FormEvent) {
-    e.preventDefault();
+  async function askAuto(length: LengthChoice) {
     setError(null);
     setText("");
-    if (prompt.trim().length < 3) return;
+    if (prompt.trim().length < 3) {
+      setError("Type a topic in the search bar first.");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await run({ data: { prompt } });
+      const res = await run({ data: { prompt, length } });
       setText(res.text);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -52,19 +55,18 @@ function Home() {
 
       <main className="mx-auto max-w-5xl px-4 py-10 md:py-14 space-y-10">
         {/* Welcome */}
-        <section className="text-center space-y-2">
-          <h1 className="leading-tight">
+        <section className="text-center space-y-4">
+          <h1 className="leading-tight flex flex-wrap items-baseline justify-center gap-x-3 md:gap-x-4">
             <span className="font-welcome text-5xl md:text-7xl text-[color:var(--persian-blue)]">
               Welcome
             </span>
-            <span className="ml-6 md:ml-8 mr-2 text-2xl md:text-3xl text-foreground/80 align-middle">
-              to
-            </span>
-            <br />
-            <span className="font-crest text-3xl md:text-5xl font-semibold uppercase tracking-widest text-[color:var(--persian-blue)]">
-              Areeb Shahid Academy
-            </span>
+            <span className="text-2xl md:text-3xl text-foreground/80">to</span>
           </h1>
+          <img
+            src={wordmarkUrl}
+            alt="Areeb Shahid Academy"
+            className="mx-auto h-16 sm:h-20 md:h-24 w-auto object-contain"
+          />
           <p className="text-muted-foreground max-w-2xl mx-auto">
             AI-powered tutor for CBSE / NCERT students, Classes 9 to 12. Ask anything, upload
             your notes, or dive into a full chapter.
@@ -72,28 +74,27 @@ function Home() {
         </section>
 
         {/* Search bar */}
-        <section className="mx-auto max-w-2xl">
-          <form onSubmit={askAuto} className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Search any topic — e.g. Newton's second law, quadratic equations…"
-                className="pl-10 h-12 text-base"
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="h-12 bg-[color:var(--persian-blue)] hover:bg-[color:var(--persian-blue)]/90"
-            >
-              {loading ? "Thinking…" : "Ask AI"}
-            </Button>
-          </form>
-          <p className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+        <section className="mx-auto max-w-2xl space-y-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Search any topic — e.g. Newton's second law, quadratic equations…"
+              className="pl-10 h-12 text-base"
+            />
+          </div>
+          <div className="flex justify-center">
+            <LengthButton
+              label="Ask AI"
+              loading={loading}
+              disabled={prompt.trim().length < 3}
+              onChoose={askAuto}
+            />
+          </div>
+          <p className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <Menu className="h-3.5 w-3.5" /> Tap the menu (top-left) for uploads, topic Q&amp;A and
-            full-chapter mode.
+            full-chapter mode. Pick an answer length from the button to run.
           </p>
         </section>
 
@@ -126,21 +127,30 @@ function Home() {
 
 function ClassTile({ classKey }: { classKey: string }) {
   const cls = CURRICULUM[classKey];
+  const streamed = classHasStreams(classKey);
+  const subCount = streamed
+    ? cls.streams
+      ? Object.values(cls.streams).flat().length
+      : 0
+    : cls.subjects
+      ? cls.subjects.length
+      : 0;
   return (
     <Link
       to="/chapter"
-      search={{ classKey, subject: "", chapter: "", auto: "" }}
+      search={{ classKey, stream: "", subject: "", chapter: "", auto: "" }}
       className="group relative flex flex-col justify-between rounded-2xl border bg-card p-6 shadow-sm transition hover:shadow-lg hover:-translate-y-0.5"
     >
       <div>
         <div className="text-xs uppercase tracking-wider text-muted-foreground">Class</div>
         <div className="mt-1 text-5xl font-bold text-[color:var(--persian-blue)]">{classKey}</div>
         <div className="mt-2 text-sm text-muted-foreground">
-          {cls.subjects.length} subjects · NCERT
+          {streamed ? "3 streams · " : ""}
+          {subCount} subjects · NCERT
         </div>
       </div>
       <div className="mt-6 text-sm font-medium text-[color:var(--persian-blue)] opacity-80 group-hover:opacity-100">
-        Choose subject &amp; chapter →
+        {streamed ? "Choose stream, subject & chapter →" : "Choose subject & chapter →"}
       </div>
       <div className="pointer-events-none absolute inset-x-0 -bottom-px h-1 rounded-b-2xl bg-[color:var(--persian-blue)] opacity-0 transition group-hover:opacity-100" />
     </Link>
