@@ -9,6 +9,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import logoUrl from "@/assets/logo.png";
+import wordmarkUrl from "@/assets/wordmark.png";
 
 export function Header() {
   return (
@@ -25,9 +26,12 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="left" className="w-[320px] sm:w-[380px]">
             <SheetHeader className="items-center text-center">
-              <SheetTitle className="font-crest text-xl font-semibold uppercase tracking-widest text-[color:var(--persian-blue)]">
-                Areeb Shahid Academy
-              </SheetTitle>
+              <SheetTitle className="sr-only">Areeb Shahid Academy</SheetTitle>
+              <img
+                src={wordmarkUrl}
+                alt="Areeb Shahid Academy"
+                className="mx-auto h-12 w-auto object-contain"
+              />
             </SheetHeader>
 
             <nav className="mt-6 flex flex-col gap-2">

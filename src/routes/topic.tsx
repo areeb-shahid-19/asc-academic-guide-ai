@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AiOutput } from "@/components/AiOutput";
 import { CurriculumPicker, type PickerValue } from "@/components/CurriculumPicker";
+import { LengthButton, type LengthChoice } from "@/components/LengthButton";
 import { explainTopic } from "@/lib/mesh.functions";
 
 export const Route = createFileRoute("/topic")({
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/topic")({
   }),
   validateSearch: (s: Record<string, unknown>) => ({
     classKey: typeof s.classKey === "string" ? s.classKey : "",
+    stream: typeof s.stream === "string" ? s.stream : "",
     subject: typeof s.subject === "string" ? s.subject : "",
     chapter: typeof s.chapter === "string" ? s.chapter : "",
   }),
@@ -32,6 +33,7 @@ function TopicPage() {
   const run = useServerFn(explainTopic);
   const [picker, setPicker] = useState<PickerValue>({
     classKey: search.classKey,
+    stream: search.stream,
     subject: search.subject,
     chapter: search.chapter,
   });
@@ -42,7 +44,7 @@ function TopicPage() {
 
   const ready = picker.classKey && picker.subject && picker.chapter;
 
-  async function submit() {
+  async function submit(length: LengthChoice) {
     setError(null);
     setText("");
     if (!ready) {
@@ -55,7 +57,7 @@ function TopicPage() {
     }
     setLoading(true);
     try {
-      const res = await run({ data: { ...picker, prompt } });
+      const res = await run({ data: { ...picker, prompt, length } });
       setText(res.text);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -80,7 +82,7 @@ function TopicPage() {
           <CurriculumPicker value={picker} onChange={setPicker} />
 
           {ready && (
-            <div className="space-y-1.5">
+            <div className="space-y-3">
               <label className="text-sm font-medium">Your question</label>
               <Textarea
                 value={prompt}
@@ -88,13 +90,12 @@ function TopicPage() {
                 placeholder="e.g. Why does mitochondria have a double membrane?"
                 className="min-h-[100px]"
               />
-              <Button
-                onClick={submit}
-                disabled={loading}
-                className="bg-[color:var(--persian-blue)] hover:bg-[color:var(--persian-blue)]/90"
-              >
-                {loading ? "Explaining…" : "Get explanation"}
-              </Button>
+              <LengthButton
+                label="Get explanation"
+                loading={loading}
+                disabled={prompt.trim().length < 3}
+                onChoose={submit}
+              />
             </div>
           )}
         </div>

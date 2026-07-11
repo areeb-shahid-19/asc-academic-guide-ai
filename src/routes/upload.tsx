@@ -2,11 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AiOutput } from "@/components/AiOutput";
+import { LengthButton, type LengthChoice } from "@/components/LengthButton";
 import { explainFromDocument } from "@/lib/mesh.functions";
 import { FileUp } from "lucide-react";
 
@@ -48,7 +48,7 @@ function UploadPage() {
     }
   }
 
-  async function submit() {
+  async function submit(length: LengthChoice) {
     setError(null);
     setText("");
     if (content.trim().length < 20) {
@@ -57,7 +57,9 @@ function UploadPage() {
     }
     setLoading(true);
     try {
-      const res = await run({ data: { content, question: question || undefined } });
+      const res = await run({
+        data: { content, question: question || undefined, length },
+      });
       setText(res.text);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -121,13 +123,12 @@ function UploadPage() {
             />
           </div>
 
-          <Button
-            onClick={submit}
-            disabled={loading}
-            className="bg-[color:var(--persian-blue)] hover:bg-[color:var(--persian-blue)]/90"
-          >
-            {loading ? "Explaining…" : "Explain to me"}
-          </Button>
+          <LengthButton
+            label="Explain to me"
+            loading={loading}
+            disabled={content.trim().length < 20}
+            onChoose={submit}
+          />
         </div>
 
         <AiOutput
