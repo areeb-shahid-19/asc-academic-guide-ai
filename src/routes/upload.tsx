@@ -24,27 +24,80 @@ export const Route = createFileRoute("/upload")({
   component: UploadPage,
 });
 
+async function extractTextFromFile(file: File): Promise<string> {
+  const name = file.name.toLowerCase();
+  const buf = await file.arrayBuffer();
+
+  if (name.endsWith(".docx")) {
+    const mammoth = await import("mammoth/mammoth.browser");
+    const result = await mammoth.extractRawText({ arrayBuffer: buf });
+    return result.value;
+  }
+  if (name.endsWith(".xlsx") || name.endsWith(".xls") || name.endsWith(".csv")) {
+    const XLSX = await import("xlsx");
+    const wb = XLSX.read(buf, { type: "array" });
+    const parts: string[] = [];
+    for (const sheetName of wb.SheetNames) {
+      parts.push(`# Sheet: ${sheetName}\n`);
+      parts.push(XLSX.utils.sheet_to_csv(wb.Sheets[sheetName]));
+      parts.push("\n");
+    }
+    return parts.join("\n");
+  }
+  if (name.endsWith(".pptx")) {
+    const JSZip = (await import("jszip")).default;
+    const zip = await JSZip.loadAsync(buf);
+    const slides = Object.keys(zip.files)
+      .filter((n) => /^ppt\/slides\/slide\d+\.xml$/i.test(n))
+      .sort();
+    const chunks: string[] = [];
+    for (const s of slides) {
+      const xml = await zip.files[s].async("string");
+      const text = xml
+        .replace(/<a:br\s*\/>/g, "\n")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (text) chunks.push(`## ${s.split("/").pop()}\n${text}`);
+    }
+    return chunks.join("\n\n");
+  }
+  // Fallback: plain text (.txt, .md, etc.)
+  return await file.text();
+}
+
 function UploadPage() {
   const run = useServerFn(explainFromDocument);
   const [content, setContent] = useState("");
   const [question, setQuestion] = useState("");
+  const [fileName, setFileName] = useState("");
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [lastLength, setLastLength] = useState<LengthChoice>("medium");
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setError("File is too large (max 5 MB). Paste the text below instead.");
+    if (file.size > 15 * 1024 * 1024) {
+      setError("File is too large (max 15 MB). Paste the text below instead.");
       return;
     }
     try {
-      const txt = await file.text();
-      setContent(txt);
       setError(null);
-    } catch {
-      setError("Could not read that file. Please paste the text below.");
+      setFileName(file.name);
+      const txt = await extractTextFromFile(file);
+      if (!txt || txt.trim().length < 5) {
+        setError("Couldn't read any text from that file. Try pasting the content below.");
+        return;
+      }
+      setContent(txt.slice(0, 80000));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `Could not read that file: ${err.message}`
+          : "Could not read that file. Please paste the text below.",
+      );
     }
   }
 
@@ -55,6 +108,7 @@ function UploadPage() {
       setError("Please upload or paste at least a paragraph of material.");
       return;
     }
+    setLastLength(length);
     setLoading(true);
     try {
       const res = await run({
@@ -77,25 +131,28 @@ function UploadPage() {
             Upload your material
           </h1>
           <p className="text-muted-foreground">
-            Paste a chapter, notes, or an assignment — the AI will read it and teach it back to you.
+            Upload a Word, Excel, PowerPoint or text file — or paste content — and the AI will
+            read it and teach it back to you.
           </p>
         </div>
 
         <div className="space-y-4 rounded-lg border bg-card p-5">
           <div className="space-y-1.5">
-            <Label htmlFor="file">Upload a text file (.txt, .md)</Label>
+            <Label htmlFor="file">Upload a file (.docx, .xlsx, .pptx, .txt, .md, .csv)</Label>
             <label
               htmlFor="file"
               className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed p-4 hover:bg-accent"
             >
               <FileUp className="h-5 w-5 text-[color:var(--persian-blue)]" />
               <span className="text-sm text-muted-foreground">
-                Click to choose a .txt / .md file, or paste the content below.
+                {fileName
+                  ? `Loaded: ${fileName} — click again to choose another`
+                  : "Click to choose a Word / Excel / PowerPoint / text file, or paste below."}
               </span>
               <input
                 id="file"
                 type="file"
-                accept=".txt,.md,text/plain,text/markdown"
+                accept=".txt,.md,.csv,.docx,.xlsx,.xls,.pptx,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.presentationml.presentation"
                 className="hidden"
                 onChange={handleFile}
               />
@@ -135,6 +192,7 @@ function UploadPage() {
           loading={loading}
           error={error}
           text={text}
+          length={lastLength}
           emptyHint="Your personalized explanation will appear here."
         />
       </main>
