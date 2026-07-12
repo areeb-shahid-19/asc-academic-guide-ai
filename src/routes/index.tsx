@@ -30,6 +30,7 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [lastLength, setLastLength] = useState<LengthChoice>("medium");
 
   async function askAuto(length: LengthChoice) {
     setError(null);
@@ -38,6 +39,7 @@ function Home() {
       setError("Type a topic in the search bar first.");
       return;
     }
+    setLastLength(length);
     setLoading(true);
     try {
       const res = await run({ data: { prompt, length } });
@@ -55,41 +57,40 @@ function Home() {
 
       <main className="mx-auto max-w-5xl px-4 py-10 md:py-14 space-y-10">
         {/* Welcome */}
-        <section className="text-center space-y-4">
-          <h1 className="leading-tight flex flex-wrap items-baseline justify-center gap-x-3 md:gap-x-4">
-            <span className="font-welcome text-5xl md:text-7xl text-[color:var(--persian-blue)]">
-              Welcome
-            </span>
-            <span className="text-2xl md:text-3xl text-foreground/80">to</span>
+        <section className="text-center space-y-2">
+          <h1 className="leading-tight flex flex-wrap items-baseline justify-center gap-x-3 md:gap-x-4 text-black">
+            <span className="font-welcome text-5xl md:text-7xl">Welcome</span>
+            <span className="font-welcome text-5xl md:text-7xl">to</span>
           </h1>
           <img
             src={wordmarkUrl}
             alt="Areeb Shahid Academy"
             className="mx-auto h-16 sm:h-20 md:h-24 w-auto object-contain"
           />
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto pt-2">
             AI-powered tutor for CBSE / NCERT students, Classes 9 to 12. Ask anything, upload
             your notes, or dive into a full chapter.
           </p>
         </section>
 
-        {/* Search bar */}
-        <section className="mx-auto max-w-2xl space-y-3">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Search any topic — e.g. Newton's second law, quadratic equations…"
-              className="pl-10 h-12 text-base"
-            />
-          </div>
-          <div className="flex justify-center">
+        {/* Search bar + Ask AI button inline */}
+        <section className="mx-auto max-w-3xl space-y-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Search any topic — e.g. Newton's second law, quadratic equations…"
+                className="pl-10 h-12 text-base"
+              />
+            </div>
             <LengthButton
               label="Ask AI"
               loading={loading}
               disabled={prompt.trim().length < 3}
               onChoose={askAuto}
+              className="sm:w-auto"
             />
           </div>
           <p className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
@@ -101,7 +102,7 @@ function Home() {
         {/* AI result (only when there is content / activity) */}
         {(loading || text || error) && (
           <section className="mx-auto max-w-3xl">
-            <AiOutput loading={loading} error={error} text={text} />
+            <AiOutput loading={loading} error={error} text={text} length={lastLength} />
           </section>
         )}
 
@@ -124,6 +125,7 @@ function Home() {
     </div>
   );
 }
+
 
 function ClassTile({ classKey }: { classKey: string }) {
   const cls = CURRICULUM[classKey];

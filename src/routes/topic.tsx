@@ -41,6 +41,7 @@ function TopicPage() {
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [lastLength, setLastLength] = useState<LengthChoice>("medium");
 
   const ready = picker.classKey && picker.subject && picker.chapter;
 
@@ -55,6 +56,7 @@ function TopicPage() {
       setError("Type what you'd like to learn about.");
       return;
     }
+    setLastLength(length);
     setLoading(true);
     try {
       const res = await run({ data: { ...picker, prompt, length } });
@@ -65,6 +67,8 @@ function TopicPage() {
       setLoading(false);
     }
   }
+
+  const placeholder = examplePlaceholder(picker.subject, picker.chapter);
 
   return (
     <div className="min-h-screen bg-background">
