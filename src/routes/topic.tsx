@@ -91,7 +91,7 @@ function TopicPage() {
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="e.g. Why does mitochondria have a double membrane?"
+                placeholder={placeholder}
                 className="min-h-[100px]"
               />
               <LengthButton
@@ -108,6 +108,7 @@ function TopicPage() {
           loading={loading}
           error={error}
           text={text}
+          length={lastLength}
           emptyHint="Pick a chapter and ask a question to see your explanation here."
         />
       </main>
