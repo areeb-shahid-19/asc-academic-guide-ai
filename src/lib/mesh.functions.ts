@@ -6,7 +6,10 @@ const MODEL = "amazon/nova-micro-v1";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
-async function callMeshMessages(messages: ChatMessage[]): Promise<string> {
+async function callMeshMessages(
+  messages: ChatMessage[],
+  opts: { maxTokens?: number } = {},
+): Promise<string> {
   const key = process.env.MESH_API_KEY;
   if (!key) throw new Error("MESH_API_KEY is not configured");
 
@@ -20,6 +23,7 @@ async function callMeshMessages(messages: ChatMessage[]): Promise<string> {
       model: MODEL,
       messages,
       temperature: 0.4,
+      max_tokens: opts.maxTokens ?? 4000,
     }),
   });
 
@@ -33,60 +37,73 @@ async function callMeshMessages(messages: ChatMessage[]): Promise<string> {
   return data.choices?.[0]?.message?.content ?? "";
 }
 
-async function callMesh(system: string, user: string): Promise<string> {
-  return callMeshMessages([
-    { role: "system", content: system },
-    { role: "user", content: user },
-  ]);
+async function callMesh(
+  system: string,
+  user: string,
+  opts: { maxTokens?: number } = {},
+): Promise<string> {
+  return callMeshMessages(
+    [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
+    opts,
+  );
 }
 
 const BASE_STYLE = `You are Areeb Shahid Academy's tutor for Indian CBSE / NCERT students (classes 9-12).
-Write like a polished textbook, not like source code. Follow these rules strictly:
+Write like a polished, exam-ready textbook chapter — never like source code or a rushed summary.
 
-FORMATTING
-- Use clean markdown: proper headings with "#", "##", "###" (not "####" for emphasis), bullet lists, numbered steps, and **bold** for key terms.
-- Do NOT dump raw code fences (\`\`\`), and do NOT use "$$$", "####" as decoration. Never show LaTeX commands like "\\int" or "\\frac" as plain text.
+=== FORMATTING ===
+- Clean markdown with "#", "##", "###" headings, bullet lists, numbered steps, and **bold** for key terms.
+- No raw code fences ("\`\`\`"), no decorative "$$$" or "####".
+- Never emit LaTeX commands as plain text (never write "\\int", "\\frac", "\\sqrt" outside math delimiters).
 
-MATH (VERY IMPORTANT — READ CAREFULLY)
-- Render ALL mathematics as real LaTeX inside dollar-sign math delimiters ONLY:
-  - Inline math: single dollars, e.g. $E = mc^2$, $\\frac{a}{b}$, $\\int_0^1 x\\,dx$.
-  - Display / block math: DOUBLE dollars on their OWN LINE, e.g.
-    $$I_{\\text{rms}} = \\sqrt{\\frac{1}{T}\\int_0^T I_0^2 \\sin^2(\\omega t)\\, dt}$$
-- ABSOLUTELY DO NOT use square brackets [ ... ] or parentheses ( ... ) as math delimiters. Do NOT write "[ I_{rms} = ... ]" or "( \\frac{a}{b} )".
-- Do NOT use \\[ \\] or \\( \\) either — only $ and $$.
-- Every LaTeX command (\\frac, \\sqrt, \\int, \\sum, \\lim, \\vec, \\alpha, \\pi, \\theta, \\omega, subscripts _ , superscripts ^ , \\text{...}) MUST be inside $...$ or $$...$$. Never leave a backslash-command in plain prose.
-- Never write math as ASCII like "integral of x dx" or "x^2/2" outside math delimiters.
+=== ADAPT SECTIONS TO THE SUBJECT — DO NOT USE A FIXED TEMPLATE ===
+Choose sections that actually fit the topic. Examples:
+- Mathematics / Physics: intuition, definitions, formulas, derivations, worked examples, practice.
+- Chemistry: concepts, reactions/mechanisms, equations, worked problems.
+- Accountancy / Business Studies / Economics: concepts, formats, journal entries in TABLES, worked ledgers/balance sheets in TABLES, ratio formulas where relevant, NCERT questions.
+- History / Political Science / Geography / Sociology / Psychology / English: themes, causes/effects, key figures/dates, analysis, exam-style answers. DO NOT invent "Formulas" or "Derivations" sections here.
+- Hindi / Urdu literature: सारांश / خلاصہ, characters, key lines, question–answer style.
+NEVER force "Formulas" / "Derivations" into a chapter that has none.
 
-DIAGRAMS & IMAGES
-- Whenever a diagram, flowchart, figure or illustration genuinely helps understanding (ray diagrams, circuit diagrams, cell structure, graphs, geometry figures, molecular structures, maps, historical photos, financial-statement layouts, flowcharts), embed a real image using markdown image syntax:
-  ![short descriptive caption](IMAGE_URL)
-- Use only stable, freely-hostable URLs from Wikimedia Commons ( https://upload.wikimedia.org/wikipedia/commons/... ) or Wikipedia. Prefer well-known Commons files for standard NCERT topics.
-- Choose the best-rated, clearest image for each concept. Place 1–3 images per response where they actually add value; do not spam.
-- If you are not confident a specific image URL is correct, describe the diagram in words instead — do NOT invent broken URLs.
-- Never output raw HTML <img> tags; only markdown image syntax.
+=== TABLES (VERY IMPORTANT FOR ACCOUNTS / COMMERCE) ===
+For journal entries, ledger accounts, trial balance, balance sheet, income statement, cash-flow statement, or any tabular data — ALWAYS use markdown tables:
+| Particulars | L.F. | Debit (₹) | Credit (₹) |
+| --- | ---: | ---: | ---: |
+Right-align numeric columns. Show totals in a final bold row. Never present accounting entries as plain sentences.
 
-STRUCTURE
-- Match depth to the requested LENGTH (see below) and to the student's class level.`;
+=== MATH (STRICT) ===
+- Inline math: single dollars, e.g. $E = mc^2$, $\\frac{a}{b}$, $\\int_0^1 x\\,dx$.
+- Block math: DOUBLE dollars on its own line:
+  $$I_{\\text{rms}} = \\sqrt{\\frac{1}{T}\\int_0^T I_0^2 \\sin^2(\\omega t)\\, dt}$$
+- NEVER use [ ... ], ( ... ), \\[ ... \\], or \\( ... \\) as math delimiters. Only $ and $$.
+- Every backslash-command MUST be inside $...$ or $$...$$.
+
+=== HINDI & URDU ===
+Write Hindi in Devanagari (देवनागरी) and Urdu in Nastaliq/Arabic script (اُردُو) — real Unicode characters, never transliteration or escape codes.
+
+=== DIAGRAMS & IMAGES ===
+When a diagram genuinely helps (ray diagrams, circuits, cell structures, geometry figures, molecular structures, maps, financial-statement layouts, flowcharts), embed a real Wikimedia Commons image:
+  ![short caption](https://upload.wikimedia.org/wikipedia/commons/...)
+Use only well-known, stable Wikimedia Commons URLs you are confident exist. If unsure, DESCRIBE the diagram in words — never invent broken URLs. Place 1–3 images where they truly add value.`;
 
 function lengthDirective(length: "short" | "medium" | "detailed"): string {
   switch (length) {
     case "short":
-      return `LENGTH: SHORT (Quick summary)
-- Aim for roughly 150–250 words.
-- Give the crisp definition, the single most important formula (if any), and one key insight.
-- Do NOT include long derivations, multiple examples, or exercise questions.
-- Even short answers MUST be genuinely useful — never respond with a one-line placeholder or a filler like "here is a summary". If the topic is inherently large (e.g. a full chapter), give the essentials, not everything.
-- Still embed one small helpful diagram/image if it truly clarifies the idea.`;
+      return `LENGTH: QUICK SUMMARY
+- ~200–300 words. Crisp definition, the single most important formula/idea, and one key insight.
+- Still useful — never a one-liner.`;
     case "medium":
-      return `LENGTH: MEDIUM (Balanced explanation)
-- Aim for roughly 400–700 words.
-- Cover intuition, definitions, the main formulas with meaning of each symbol, ONE fully worked example, and 2 practice questions with brief solutions.
-- Include a diagram/image if it clearly helps.`;
+      return `LENGTH: BALANCED EXPLANATION
+- ~500–800 words. Intuition + definitions + main formulas (only if the topic has them) + ONE fully worked example + 2 short practice Q&A.`;
     case "detailed":
-      return `LENGTH: DETAILED (Full textbook depth)
-- Produce a thorough, exam-ready explanation.
-- Include intuition, precise definitions, ALL relevant formulas, complete step-by-step derivations, 2–3 worked examples of increasing difficulty, common mistakes, and 3–4 practice questions with full solutions.
-- Include diagrams/images wherever they add real value.`;
+      return `LENGTH: DETAILED EXPLANATION (exam-ready, textbook depth)
+- Target 1500–2500+ words. This must be genuinely long and thorough — a student should be able to answer any exam question from it.
+- Cover: intuition → precise definitions → all relevant formulas/rules/dates/frameworks (as appropriate to the subject) → complete step-by-step derivations OR full worked accounting formats OR full literary analysis → 3+ worked examples/case studies of increasing difficulty → common mistakes → 4–6 practice questions with FULL solutions → quick revision points at the end.
+- For Accounts / Commerce: include full journal-entry tables, ledger tables, and complete formatted balance-sheet / income-statement / cash-flow tables where relevant.
+- NEVER stop early. NEVER return a short answer when this length is requested.`;
   }
 }
 
@@ -96,26 +113,36 @@ function systemFor(length: "short" | "medium" | "detailed"): string {
 
 const LengthSchema = z.enum(["short", "medium", "detailed"]);
 
+function maxTokensFor(length: "short" | "medium" | "detailed"): number {
+  if (length === "short") return 1200;
+  if (length === "medium") return 3000;
+  return 6000;
+}
+
 /* -------- Option 1: explain from uploaded document -------- */
 export const explainFromDocument = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
-        content: z.string().min(20).max(60000),
+        content: z.string().min(20).max(80000),
         question: z.string().max(1000).optional(),
         length: LengthSchema,
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const user = `The student uploaded this academic material. Read it carefully and explain the topic to them so they truly understand it.
+    const user = `The student uploaded this academic material. Read it carefully and explain the topic so they truly understand it.
 ${data.question ? `Their specific question: ${data.question}\n` : ""}
 ----- MATERIAL -----
 ${data.content}
 ----- END -----
 
-Now produce a clear, structured explanation covering: the core idea, key concepts, worked examples if applicable, and self-check questions with answers — sized to the requested LENGTH.`;
-    return { text: await callMesh(systemFor(data.length), user) };
+Produce a clear, structured explanation sized to the requested LENGTH. Use sections that match the SUBJECT of the material — do not force Formulas/Derivations if the material has none.`;
+    return {
+      text: await callMesh(systemFor(data.length), user, {
+        maxTokens: maxTokensFor(data.length),
+      }),
+    };
   });
 
 /* -------- Option 2: filtered topic question -------- */
@@ -140,8 +167,12 @@ export const explainTopic = createServerFn({ method: "POST" })
 
 Their question / topic: ${data.prompt}
 
-Search your knowledge of the NCERT textbook and standard supplementary sources at this class level. Produce the best personalized, exam-ready explanation possible — sized to the requested LENGTH.`;
-    return { text: await callMesh(systemFor(data.length), user) };
+Produce the best personalized, exam-ready explanation possible — sized to the requested LENGTH. Use sections appropriate for ${data.subject}; do not force Formulas or Derivations if this subject has none. Use markdown tables for accounting entries / financial statements when relevant.`;
+    return {
+      text: await callMesh(systemFor(data.length), user, {
+        maxTokens: maxTokensFor(data.length),
+      }),
+    };
   });
 
 /* -------- Option 3: full chapter explanation -------- */
@@ -158,24 +189,29 @@ export const explainChapter = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const user = `Produce a NCERT-aligned study guide for a Class ${data.classKey}${data.stream ? ` (${data.stream})` : ""} student.
+    const user = `Produce a NCERT-aligned complete study guide for a Class ${data.classKey}${data.stream ? ` (${data.stream})` : ""} student.
 Subject: ${data.subject}
 Chapter: ${data.chapter}
 
-If the requested LENGTH is DETAILED, use these sections (with markdown headings):
-1. **Overview**
-2. **Key Concepts**
-3. **Formulas / Rules**
-4. **Derivations**
-5. **Diagrams** (embed real images where helpful)
-6. **Worked Examples**
-7. **NCERT Exercise Questions & Solutions**
-8. **Quick Revision Notes**
-9. **Common Mistakes**
+Pick sections that ACTUALLY fit this subject/chapter — do not force irrelevant sections. Suggested section palette (use only what fits):
+- Overview / Introduction
+- Key Concepts (with definitions)
+- Formulas / Rules (only for Maths, Physics, Chemistry, Accounting-ratios, Economics-stats)
+- Derivations (only for Maths / Physics / Chemistry topics that require them)
+- Accounting Formats & Journal Entries (in tables) — for Accountancy
+- Financial Statement / Balance Sheet / Cash-Flow layouts (in tables) — for Accountancy
+- Diagrams (embed real Wikimedia Commons images where they truly help)
+- Worked Examples (full solutions; tables where numeric)
+- NCERT Exercise Questions & Solutions
+- Quick Revision Notes
+- Common Mistakes / Exam Tips
 
-If MEDIUM, keep sections 1, 2, 3, 6, 8 only.
-If SHORT, produce a concise chapter recap (Overview, top 5 key concepts, top formulas, and 5 revision-note bullets) — still genuinely useful, never a one-liner.`;
-    return { text: await callMesh(systemFor(data.length), user) };
+Match depth to LENGTH. For DETAILED length, produce a genuinely long (1500–2500+ words), exam-ready guide.`;
+    return {
+      text: await callMesh(systemFor(data.length), user, {
+        maxTokens: maxTokensFor(data.length),
+      }),
+    };
   });
 
 /* -------- Home search: auto-detect class/subject -------- */
@@ -193,34 +229,47 @@ export const explainAuto = createServerFn({ method: "POST" })
 
 "${data.prompt}"
 
-First, briefly identify the most likely class level and subject/chapter for this topic (one italic line). Then give the best explanation for that level — sized to the requested LENGTH.`;
-    return { text: await callMesh(systemFor(data.length), user) };
+Briefly identify the most likely class level and subject/chapter (one italic line). Then give the best explanation for that level — sized to LENGTH, using sections appropriate to the identified subject.`;
+    return {
+      text: await callMesh(systemFor(data.length), user, {
+        maxTokens: maxTokensFor(data.length),
+      }),
+    };
   });
 
-/* -------- Follow-up: continue a previous answer -------- */
+/* -------- Follow-up: continue a previous answer (uses same length as parent) -------- */
 export const followUp = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
         previousAnswer: z.string().min(1).max(80000),
         question: z.string().min(2).max(2000),
-        length: LengthSchema,
+        length: LengthSchema.optional().default("medium"),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
+    // Mesh AI (Bedrock Converse) requires the FIRST message to be from the user.
+    // Keep the previous assistant answer as context inside a user turn, then the
+    // follow-up as the second user turn is not allowed either — so we merge
+    // context + follow-up into a single user message.
+    const userTurn = `Here is the explanation you gave me earlier:
+
+----- PREVIOUS EXPLANATION -----
+${data.previousAnswer}
+----- END -----
+
+Follow-up question about that explanation: ${data.question}
+
+Answer ONLY the follow-up — do not repeat the whole previous explanation. Refer back to specific steps, symbols or signs as needed and clarify the reasoning behind them.`;
+
     const messages: ChatMessage[] = [
       { role: "system", content: systemFor(data.length) },
-      {
-        role: "assistant",
-        content: data.previousAnswer,
-      },
-      {
-        role: "user",
-        content: `Follow-up question about the explanation you just gave me: ${data.question}
-
-Answer ONLY the follow-up — do not repeat the whole previous explanation. Refer back to specific steps, symbols or signs as needed and clarify the reasoning behind them.`,
-      },
+      { role: "user", content: userTurn },
     ];
-    return { text: await callMeshMessages(messages) };
+    return {
+      text: await callMeshMessages(messages, {
+        maxTokens: maxTokensFor(data.length),
+      }),
+    };
   });

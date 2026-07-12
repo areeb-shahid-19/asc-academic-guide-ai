@@ -18,7 +18,7 @@ export const LENGTH_OPTIONS: {
 }[] = [
   { value: "short", label: "Quick summary", hint: "Crisp overview — key points only" },
   { value: "medium", label: "Balanced explanation", hint: "Concepts + one worked example" },
-  { value: "detailed", label: "Full textbook depth", hint: "Deep, derivations, multiple examples" },
+  { value: "detailed", label: "Detailed Explanation", hint: "Exam-ready, textbook depth" },
 ];
 
 /**
